@@ -1,0 +1,7 @@
+file = open('고향의봄.txt', mode='a', encoding='utf-8')
+file.write('\n꽃-동-네 새 동네 나의 옛-고향-\n')
+file.write('파-란-들 남쪽에서 바-람이-불면-\n냇-가에 수양버들 춤추는-동네-\n')
+file.write('그 속에 놀던 때가 그립습니다.-')
+file.close()
+file = open('고향의봄.txt', encoding='utf-8')
+print(file.read())

@@ -1,0 +1,10 @@
+file = open('고향의봄.txt', mode ='w', encoding='utf-8')
+file.write('======= 고향의 봄 =======\n\n')
+file.write('나의 살-던 고향은 꽃피는-산골-\n')
+file.write('복숭아-꽃 살-구꽃 아-기 진-달래-\n')
+file.write('울긋불-긋 꽃 대궐 차리인-동네-\n')
+file.write('그 속에서 놀던 때가 그립습니다\n')
+file.close()
+
+file = open('고향의봄.txt', encoding='utf-8')
+print(file.read())
