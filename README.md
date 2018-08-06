@@ -2,7 +2,7 @@
 
 Seoul National 4th industrial revolution academy
 
-Bigdata Analytics(http://bdi.snu.ac.kr/academy/portal/index.php/ba_intro/)
+Bigdata Analytics(http://bdi.snu.ac.kr/academy/portal/index.php/ba_intro)
 
 --- 
 ## Q1(2018.06-2018.07)
