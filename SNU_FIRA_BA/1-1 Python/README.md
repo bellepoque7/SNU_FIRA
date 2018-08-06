@@ -3,6 +3,6 @@
 
 02 [SNU_BDI](http://udsl.snu.ac.kr/): Python I & II 
 
-03 SNU_FIRA Python I
+01 SNU_FIRA Python I
 
-04 SNU_FIRA Python Sara TA 
+02 SNU_FIRA Python Sara TA 
