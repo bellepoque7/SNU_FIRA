@@ -8,7 +8,7 @@ Bigdata Analytics(http://bdi.snu.ac.kr/academy/portal/index.php/ba_intro/)
 ## Q1(2018.06-2018.07)
 - 데이터 분석과 추론[Statistics] 
 - 데이터 기반 통계 분석 시스템 구축[R]
-- 파이썬을 이용한 빅데이터 분석 개론(https://github.com/jayjunglim/SNU_FIRA/tree/master/SNU_FIRA_BA/1-1%20Python)[Python]
+- 파이썬을 이용한 빅데이터 분석 개론[Python](https://github.com/jayjunglim/SNU_FIRA/tree/master/SNU_FIRA_BA/1-1%20Python)
 
 ---
 ## Q2(2018.08-2018.09)
