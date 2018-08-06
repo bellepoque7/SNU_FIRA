@@ -1,7 +1,7 @@
 # python_intro
-01 Group_Learning(13th May - 3rd Jun) with Group Instructor
+01 [Group_Learning](http://krksap.tistory.com/notice/1116) (13th May - 3rd Jun)
 
-02 SNU_BDI: Python I & II 
+02 [SNU_BDI](http://udsl.snu.ac.kr/): Python I & II 
 
 03 SNU_FIRA Python I
 
