@@ -1,4 +1,4 @@
-#Python
+# Python
 
 01 SNU_FIRA Python I
 
