@@ -12,7 +12,7 @@ Bigdata Analytics(http://bdi.snu.ac.kr/academy/portal/index.php/ba_intro)
 
 ---
 ## Q2(2018.08-2018.09)
-- Data-based Statistical Decision Model \([Decision_Model](https://github.com/jayjunglim/SNU_FIRA/tree/master/SNU_FIRA_BA/2-3%20DecisionModel)\)
+- Data-based Statistical Decision Model \([SM](https://github.com/jayjunglim/SNU_FIRA/tree/master/SNU_FIRA_BA/2-3%20DecisionModel)\)
 - 통계적 빅데이터 학습이론 \([Stat_Learn](https://github.com/jayjunglim/SNU_FIRA/tree/master/SNU_FIRA_BA/2-2%20Statistics)\)
 - Database Marketing \([DM](https://github.com/jayjunglim/SNU_FIRA/tree/master/SNU_FIRA_BA/2-1%20Datebase%20Marketing)\) \([T.A_Choi](https://github.com/jayjunglim/SNU_FIRA/tree/master/SNU_FIRA_BA/2-1-1%20TA_Deeplearning_choi)\)
 
