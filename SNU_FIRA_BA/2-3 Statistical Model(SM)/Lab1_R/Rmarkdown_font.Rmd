@@ -1,0 +1,31 @@
+Text formatting
+------------------------------------------------------------
+*italic* or _italic_
+**bold** __bold__
+`code`
+superscript^2^ and subscript~2~
+
+```{r}
+summary(mtcars)
+```
+
+# 1st level header
+
+## 1st level headest
+
+### one of the best level headestestK
+
+* hi
+    * yes
+    
+<google.com>
+[google](www.google.co.kr)
+
+
+First Header | Second Header
+---------------------------
+content Cell | Celle
+Content cell | contenctCell
+
+
+# html 파일이나 

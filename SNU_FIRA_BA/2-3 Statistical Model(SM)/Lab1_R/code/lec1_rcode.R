@@ -269,7 +269,10 @@ print (p)
 par ( mfrow = c(1 ,2)) #multiple graphs
 barplot (x, names = k); pie(x)
 r = sum (k * p) # mean
+r 
 v = sum (x * (k - r)^2) / 199 # variance
+v
+
 f = dpois (k, r) #poisson density, 단위 시간당 죽음이 일어날 횟수에 대한 기대값이 r일때, k번 일어날 확률
 print( cbind (k, p, f)) # 사망수, 실제 사망수 비율, 포아송 분포(기대값 0.61일때)로부터의 사망수 확률
 
@@ -277,9 +280,9 @@ print( cbind (k, p, f)) # 사망수, 실제 사망수 비율, 포아송 분포(�
 #--- 2. Random sampling
 
 #sample function : random sampling from finite population
-sample (1:40 ,5)
-sample (c("H","T"), 10, replace =T)
-sample (c("s", "f"), 10, replace =T, prob =c(0.9 , 0.1))
+sample (1:40 ,5)  # 5개 랜덤하게 뽑는다.
+sample (c("H","T"), 10, replace =T) # 복원추출한다. 
+sample (c("s", "f"), 10, replace =T, prob =c(0.9 , 0.1)) 
 
 # Exercises (p. 33)
 
@@ -308,24 +311,25 @@ plot ( rnorm (200))                   #random numbers
 
 # Example 1: plot, text and abline
 par (mfrow = c(1 ,1))
-x <- runif(50,0,2); y <- runif(50,0,2) #random sample in uniform(0,2) distribution
-plot (x, y, main =" Main title ", sub =" subtitle ",
+x <- runif(50,0,2); y <- runif(50,0,2) #random sample in uniform(0,2) distribution 50개씩
+plot (x, y, main =" Main title ", sub =" subtitle ", # x축 라벨 밑 subtitle
       xlab ="x- label ", ylab ="y- label ")
 abline (a = 0.5 , b = 1) #a: intercept, b : slope
 abline (h = 0.5 , col = 'red ')
 abline (v = 0.5 , col = " blue ")
-text (0.5 ,0.6 , " text at x = 0.5 , y = 0.6 ")
+text (0.5 ,0.6 , " text at x = 0.5 , y = 0.6 ") #설명달기
 
 
 # Example 2: plot, text and lines
 head ( USArrests )
-attach ( USArrests )
+attach ( USArrests ) # 일일히 $ 안쓰고 변수를 뙇 R에 주입시키기
 plot ( Murder , Assault , pch = 20, col = " red ") #pch : plotting character
 text ( Murder , Assault , rownames ( USArrests ), cex = 0.5) #cex : scaling of text
 localregfit <- lowess ( Assault ~ Murder ) 
 #lowess returns an object containing components x and y which give the coordinates of the smooth
 #추세선 찾는 방법 중 하나.
 lines ( localregfit $x, localregfit $y)
+detach(USArrests) # 뗴어놓ㄱ
 
 
 # Example 3: Print the rownames instead of symbols
@@ -334,13 +338,16 @@ text ( Murder , Assault , rownames ( USArrests ), cex = 0.5)
 
 
 # Example 4: Scatterplot matrix for multi-variate data frame
-plot( USArrests ) #or
+plot( USArrests ) #or   한번에 scatter plot 그리기
 pairs( USArrests )
-
+기
 
 #Read Remarks (p.43,44) and Important high-level plotting functions(p.45)
 
-
+h <- hist (x, plot =F)
+ylim <- range (0, h$ density , dnorm (0))
+hist (x, freq =F, ylim = ylim )
+curve ( dnorm (x), add=T)
 
 
 
@@ -356,14 +363,14 @@ if(1==0){
   print(2)
 }
 
-# Conditional Executions: ifelse statement operates on vectors
+# Conditional Execut기ions: ifelse statement operates on vectors
 x <- 1:10
 ifelse (x <5, x, 0)
 
 # for Loops : Loops over a fixed set of values
 x <- seq (0, 1 ,.05)
 plot (x, x, ylab ="y", type ="l")
-for ( j in 2:8 ) lines (x, x^j)
+for ( j in 2:8 ) lines (x, x^j)  # lines: 연결선 그리기.
 
 # while Loops: Iterates as long as a condition is true
 z <- 0
@@ -385,20 +392,22 @@ while(T) {
 #--- 2. The apply function family (p. 52)
 #: apply a function to each element of a set of values or vectors and collect the results in a single structure.
 
+# row마다 vector마다 계산을 따로해주는거
+apply ( USArrests , 2, mean ) # 1이면 row별로 2면 column별로 해줌.
 
-apply ( USArrests , 2, mean )
+#lapply : returns a list 리스트형태로 반환 
+#sapply : tries to simplify the result to a vector or a matrix if possible.(가능한 간단하게)
 
-#lapply : returns a list
-#sapply : tries to simplify the result to a vector or a matrix if possible.
-
-#library(ISwR)
+install.packages('ISwR')
+library(ISwR)
+str(thuesen)
 lapply(thuesen, mean, na.rm=T)
 sapply ( thuesen , mean , na.rm=T)
 
-#tapply : factor에 따라 첫번째 인자의 function값을 출력 
+#tapply : factor에 따라 첫번째 인자의 function값을 출력  여기서는 expend
 #median of energy expenditure for each level (lean, obese)
 data ( energy )
-tapply ( energy $ expend , energy $ stature , median ) 
+tapply ( energy $ expend , energy $ stature , median )  # 각각의 중간값출력
 
 
 
@@ -419,9 +428,10 @@ myfn(2,3)
 x <- myfn(5); x
 
 # R function example 2
-hist.with.normal <- function (x, xlab = deparse (substitute(x)) ,...){
-    h <- hist (x, plot =F, ...)
-    s <- sd(x)
+hist.with.normal <- function (x, xlab = deparse (substitute(x)) ,...){ 
+    h <- hist (x, plot =F, ...)  # deparse는 변수를 캐릭터형으로 넣어주라는것.
+                                 # ... 은 뒤에거 생략하라는 말이다.??
+    s <- sd(x)                   # substitue
     m <- mean (x)
     ylim <- range (0,h$ density , dnorm (0, sd=s)) #min, max value
     hist (x, freq =F, ylim =ylim , xlab =xlab , ...)

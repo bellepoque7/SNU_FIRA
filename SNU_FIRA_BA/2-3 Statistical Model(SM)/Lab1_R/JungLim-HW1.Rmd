@@ -1,0 +1,40 @@
+---
+title: "Rmarkdown exercise"
+author: "Jung Lim"
+date: "2018년 8월 7일"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+## Excercise 3-1,2,3
+데이터분석과 추론
+
+-------------------
+
+* 통계 맛보기 **(1학기-2018)**
+* R 기초 **(1학기-2018)**
+* 기술통계 **(1학기-2018)**
+
+-------------------
+
+[SNU_FIRA_BA course](http://bdi.snu.ac.kr/academy/?page_id=1413)
+
+![](https://www.gettyimages.ca/gi-resources/images/Homepage/Hero/UK/CMS_Creative_164657191_Kingfisher.jpg)
+
+
+## Excercise 4- 1,2
+
+```{r, echo = FALSE}
+dat <- read.csv('mtmv_data_10_12.csv', sep = ',')
+attach(dat)
+dat.fit <- lm(vote_share~mshare, data = dat)
+summary(dat.fit)
+```
+
+
+```{r, echo= FALSE, warning = FALSE}
+library(ggplot2)
+ggplot(data = dat, aes(x=mshare, y=vote_share)) + geom_point() + geom_smooth(method = 'lm', col = 'red')
+```
+
