@@ -1,0 +1,46 @@
+---
+title: "Rmarkdown exercise"
+author: "Jung Lim"
+date: "2018년 8월 7일"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+## Excercise 3-1,2,3
+### 통계과목 기술하기
+
+데이터분석과 추론
+
+-------------------
+
+* 통계 맛보기 **(1학기-2018)**
+* R 기초 **(1학기-2018)**
+* 기술통계 **(1학기-2018)**
+
+-------------------
+과목: [SNU_FIRA_BA course](http://bdi.snu.ac.kr/academy/?page_id=1413)
+
+![](https://www.gettyimages.ca/gi-resources/images/Homepage/Hero/UK/CMS_Creative_164657191_Kingfisher.jpg)
+
+
+## Excercise 4- 1,2
+### 회귀분석 및 산점도 그리기
+
+```{r, echo = FALSE}
+dat <- read.csv('mtmv_data_10_12.csv', sep = ',')
+attach(dat)
+dat.fit <- lm(vote_share~mshare, data = dat)
+summary(dat.fit)
+```
+
+두 변수 vote_share, mshare에 대하여 회귀분석을 진행하였을때
+beta0과 beta1의 p-value가 매우 작음으로 유의하다고 할 수 있다.
+
+```{r, echo= FALSE, warning = FALSE}
+library(ggplot2)
+ggplot(data = dat, aes(x=mshare, y=vote_share)) + geom_point() + geom_smooth(method = 'lm', col = 'red')
+
+```
+
+두 변수 vote_share와 mshare을 산점도와 회귀직선을 나타낸 그림이다.
