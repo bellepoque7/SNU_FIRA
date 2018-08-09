@@ -21,7 +21,7 @@ output:
 -------------------
 과목: [SNU_FIRA_BA course](http://bdi.snu.ac.kr/academy/?page_id=1413)
 
-![](https://www.gettyimages.ca/gi-resources/images/Homepage/Hero/UK/CMS_Creative_164657191_Kingfisher.jpg)
+![](http://bdi.snu.ac.kr/moel/wp-content/uploads/2018/04/BAKakaoTalk_20180405_140235350.jpg)
 
 
 ## Excercise 4- 1,2
