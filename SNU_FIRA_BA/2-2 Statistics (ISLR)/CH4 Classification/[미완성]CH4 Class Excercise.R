@@ -40,3 +40,11 @@ test=creditdefault[25001:30000,]
 X=train.X
 head(X)
 head(X,n=1)
+
+
+#미완성
+
+
+
+
+#-----
