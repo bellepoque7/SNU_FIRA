@@ -7,5 +7,7 @@
 
 3. Regression
 
-4. Classification: 베이즈 분류기, K-NN, Logistic regression, linear discriminant analysis, confusion matrix
+4. Classification: Bayes Classifier
 
+- K-NN, Logistic regression, linear discriminant analysis, confusion matrix
+- tree model, random forest, boosting, SVM
