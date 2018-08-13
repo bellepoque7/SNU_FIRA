@@ -16,3 +16,7 @@
 
 - K-NN, Logistic regression, linear discriminant analysis, confusion matrix
 - tree model, random forest, boosting, SVM
+
+5. 재추출 방법들
+
+- Cross Validation, Leave-one-outc CV,Bootstrap
