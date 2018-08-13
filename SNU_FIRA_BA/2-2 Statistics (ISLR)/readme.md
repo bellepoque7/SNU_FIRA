@@ -19,4 +19,4 @@
 
 5. 재추출 방법들
 
-- Cross Validation, Leave-one-outc CV,Bootstrap
+- Cross Validation, Leave-one-out CV,Bootstrap
