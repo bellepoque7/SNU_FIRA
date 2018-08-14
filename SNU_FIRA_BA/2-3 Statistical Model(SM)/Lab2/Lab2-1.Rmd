@@ -1,0 +1,182 @@
+---
+title: 'STAT 1291: Data Science'
+subtitle: 'Lab 4: Visualizing historical baby names via ggplot2'
+output:
+  html_document
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, fig.width=6, fig.height=4, out.width = "70%", fig.align = "center") 
+```
+
+
+## 1. Introduction
+
+In this lab, we will follow Section 3.3 "Extended example: Historical baby names" in MDSR, and in particular, recreate 
+the plot on the popularity of the name "Joseph" as constructed by FiveThirtyEight. Check out the second graphic at 
+https://fivethirtyeight.com/features/how-to-tell-someones-age-when-all-you-know-is-her-name/. This graphic is created (in part) by Nate Silver, the founder and editor in chief of FiveThirtyEight and an American statistician. 
+
+
+![Figure 3.21.](https://espnfivethirtyeight.files.wordpress.com/2014/05/silver-feature-joseph2.png?w=575&quality=90&strip=info) 
+
+
+Using data from the `babynames` package, which uses public data from the Social Security Administration (SSA), we can re-create many of the plots presented in the FiveThirtyEight blog post, and in the process learn how to use ggplot2 to make production-quality data graphics.
+
+The key insight of the FiveThirtyEight work is the estimation of the number of people with each name who are currently alive. The `lifetables` table from the `babynames` package contains actuarial estimates of the number of people per 100,000 who are alive at age $x$, for every $0 \le x \le 114$. The `make_babynames_dist()` function in the `mdsr` package adds some more convenient variables and filters for only the data that is relevant to people alive in 2014.
+
+```{r, message = FALSE}
+library(mdsr)
+library(babynames)
+BabynamesDist <- make_babynames_dist()
+head(BabynamesDist, 2)
+```
+
+
+#### Exercises
+
+1. Inspect `babynames` packages. Which data frames are included? [Hint: Try `help(package="babynames")`].
+
+2. The `BabynamesDist` data frame created above is obtained by joining `lifetables` and `babynames` tables (data frames) and also by manipulating their variables. Count the number of varibles in `BabynamesDist` and `babynames`. 
+Count the number of cases in `BabynamesDist` and `babynames` and check that not all cases in the original data are included in `BabynamesDist`. 
+
+3. Inspect Figure 3.21. Imagine a data set used there. What are the cases? What are the variables? Which visual cues (plural!) are used to map which variables? See if the choice of coordinate system and scale are appropriate. Identify all labels and guides (or legends) used in the graphic to provide the context.
+
+## 2. Re-creating Figure 3.21
+
+To find information about a specific name, we can just use the `filter()` function. 
+
+```{r}
+joseph <- BabynamesDist %>% filter(name == "Joseph", sex == "M")
+```
+
+Both `%>%` operator and `filter()` function are important elements in *Data Wrangling*, but for now, we read the above code as "Take `BabynamesDist` then filter all cases whose name is Joseph and sex is male". The result in saved in a smaller data frame called `joseph`. 
+
+Back to Exercise #3 above, there are two main data elements in that plot: a thick black line indicating the number of Josephs born each year, and the thin light blue bars indicating the number of Josephs born in each year that are expected to still be alive today. In both cases, the vertical axis corresponds to the number of people (in thousands), and the horizontal axis corresponds to the year of birth.
+
+We can compose a similar plot in `ggplot2`. First we take the relevant subset of the data and set up the initial `ggplot2` object. The data frame `joseph` is bound to the plot, since this contains all of the data that we need for this plot, but we will be using it with multiple `geom`s. Moreover, the `year` variable is mapped to the x-axis as an aesthetic. This will ensure that everything will line up properly.
+
+```{r}
+name_plot <- ggplot(data = joseph, aes(x = year))
+```
+
+Next, we will add the bars.
+
+```{r}
+name_plot <- name_plot +
+  geom_bar(stat = "identity", aes(y = count_thousands * alive_prob),
+            fill = "#b2d7e9", colour = "white")
+```            
+
+The `geom_bar()` function adds bars, which are filled with a light blue color and a white border. The height of the bars is an aesthetic that is mapped to the estimated number of people alive today who were born in each year. The `stat` argument is set to identity, since we want the actual y values to be used. 
+
+The black line is easily added using the `geom_line()` function. 
+
+```{r}
+name_plot <- name_plot + geom_line(aes(y = count_thousands), size = 2) 
+```
+
+#### Exercises
+
+4. No graphic is produced by executing the above three code chunks. Why is that? How can you see the graph?
+
+Adding an informative label for the vertical axis and removing an uninformative label for the horizontal axis will improve the readability of our plot.
+
+```{r}
+name_plot <- name_plot +
+  ylab("Number of People (thousands)") + xlab(NULL)
+```
+
+The final data-driven element of Figure 3.21 is a darker blue bar indicating the median year of birth. We can compute this with the `wtd.quantile()` function in the `Hmisc` package. Setting the probs argument to 0.5 will give us the median year of birth, weighted by the number of people estimated to be alive today (`est_alive_today`).
+
+```{r, message = FALSE}
+#install.packages("Hmisc")
+library(Hmisc) 
+median_yob <-
+  with(joseph, wtd.quantile(year, est_alive_today, probs = 0.5))
+median_yob
+```
+
+Here, `install.packages("Hmisc")` is commented about because I have previously installed `Hmisc` package. You must install the package in order to load it using `library()` function. To install, uncomment the first line of code, or use "Packages" tab in RStudio. 
+
+Be sure to understand `with()` function used in computation of `median_yob`. You do not need to understand what `wtd.quantile()` does; it computes the median year. 
+We can then overplot a single bar in a darker shade of blue. Here, we are using the `ifelse()` function cleverly. If the year is equal to the median year of birth, then the height of the bar is the estimated number of Josephs alive today. Otherwise, the height of the bar is zero (so you can’t see it at all). In this manner we plot only the one darker blue bar that we want to highlight.
+
+```{r}
+name_plot <- name_plot +
+  geom_bar(stat = "identity", colour = "white", fill = "#008fd5",
+           aes(y = ifelse(year == median_yob, est_alive_today / 1000, 0)))
+``` 
+
+
+#### Exercises
+
+5. Consider using `ifelse` to dichotomize a numeric variable. For this task, load the famous Boston housing data: `MASS::Boston`. Type `?Boston` to read the data description. What is the mean of variable `medv`? [Hint: `mean(MASS::Boston$medv)`].
+
+6. Using the `Boston` data set, write a code to create a data object named `Binary_medv` whose value is `"rich"` if the value of `medv` is greater than 25, `"not so"` if not. Use both `with()` and `ifelse()`.
+
+Back to babynames example. Lastly, Figure 3.21 contains many contextual elements specific to the name Joseph. We can add a title, annotated text, and an arrow providing focus to a specific element of the plot.
+ 
+```{r}
+name_plot +
+  ggtitle("Age Distribution of American Boys Named Joseph") +
+  geom_text(x = 1935, y = 40, label = "Number of Josephs\nborn each year") +
+  geom_text(x = 1915, y = 13, label =
+    "Number of Josephs\nborn each year\nestimated to be alive\non 1/1/2014",
+    colour = "#b2d7e9") +
+  geom_text(x = 2003, y = 40,
+    label = "The median\nliving Joseph\nis 37 years old",
+            colour = "darkgray") +
+  geom_curve(x = 1995, xend = 1974, y = 40, yend = 24,
+    arrow = arrow(length = unit(0.3,"cm")), curvature = 0.5) + ylim(0, 42)
+```
+
+
+## 3. Re-using `name_plot` 
+
+Notice that the `name_plot` object does not contain any contextual information, updated in the last code chunk.  This was intentional, since we can update the data argument of name_plot and obtain an analogous plot for another name. This functionality makes use of the special `%+%` operator.
+
+```{r}
+Josephine <- filter(BabynamesDist, name == "Josephine" & sex == "F")
+name_plot %+% Josephine
+```
+
+We can use a `facet_grid()` to compare the gender breakdown for a few of the most common of these
+
+```{r}
+many_names_plot <- name_plot + facet_grid(name ~ sex)
+mnp <- many_names_plot %+% filter(BabynamesDist, name %in%
+  c("Jessie", "Marion", "Jackie"))
+mnp
+```
+
+
+#### Exercises 
+
+7. Using the famous Galton data set from the mosaicData package:
+
+```{r eval = FALSE}
+library(mosaic)
+head(Galton)
+```
+
+   (a) Create a scatter plot of each person’s height against their father’s height
+   
+   (b) Separate your plot into facets by sex
+   
+   (c) Add regression lines to all of your facets; use `geom_smooth(method = "lm")`.
+   
+8. The `MLB_teams` data set in the `mdsr` package contains information about Major League Baseball teams in the past four seasons. There are several quantitative and a few categorical variables present. See how many variables you can illustrate on a single plot in R. The current record is 7. [Note: this is not good graphical practice—it is merely an exercise to help you understand how to use visual cues and aesthetics!]
+ 
+ 
+```{r eval = FALSE}
+library(mdsr)
+head(MLB_teams, 2)
+```
+
+9. Use the `MLB_teams` data in the `mdsr` package to create an informative data graphic that illustrates the relationship between winning percentage `WPct` and payroll `payroll` in context.
+
+
+
+

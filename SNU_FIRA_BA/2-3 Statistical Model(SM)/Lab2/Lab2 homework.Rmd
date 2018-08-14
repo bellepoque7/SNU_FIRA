@@ -1,0 +1,84 @@
+---
+title: "HW2_JungLIm"
+author: "Junglim"
+date: "2018년 8월 14일"
+output: html_document
+---
+
+# 자료기반 통계의사결정모형
+## HW2 과제 
+
+자료의 처리를 위한 Package를 불러오기
+```{r setup, message=F}
+library(Hmisc)
+library(dplyr)
+library(mdsr)
+library(babynames)
+```
+
+
+BabynamesDist를 생성하여 head부분을 살펴보기
+```{r anti_names}
+BabynamesDist<-make_babynames_dist()
+head(BabynamesDist)
+```
+
+후에 진행할 코드에서 division by zero 에러를 피하기 위하여 
+est_num_alive 가 0인 항목을들 할당해놓기 
+```{r}
+anti_names <- BabynamesDist %>%
+  filter(sex == "M") %>%
+  group_by(name) %>%
+  dplyr::summarise(est_num_alive=sum(est_alive_today)) %>%
+  filter(est_num_alive==0)%>%
+  select(name)
+anti_names
+```
+
+
+정제된 데이터에 대하여 사분위수를 구하고 est_num_alive가 10만이상인 데이터만 추출하여 head를 출력하기 
+```{r com_ml}
+com_ml = BabynamesDist %>%
+  anti_join(anti_names, by="name") %>%
+  filter(sex == "M") %>% 
+  group_by(name) %>% 
+  summarise(
+    N = n(),
+    est_num_alive = sum(est_alive_today),
+    q1_age = wtd.quantile(age_today, est_alive_today, probs = 0.25),
+    median_age = wtd.quantile(age_today, est_alive_today, probs=0.5),
+    q3_age = wtd.quantile(age_today, est_alive_today, probs = 0.75)) %>%
+  filter(est_num_alive >= 100000) %>% 
+  arrange(median_age) %>% 
+  head(25)
+head(com_ml)
+```
+
+
+ggplot을 이용하여 그리기
+```{r ggplot}
+m_plot <- ggplot(
+  data = com_ml, 
+  aes(x = reorder(name, -median_age),  y = median_age)  ) + 
+  xlab(NULL) + 
+  ylab("Age (in years)") +  
+  ggtitle("Median ages for the 25 youngest Male Names") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+최종적으로 median_age를 구하여 나이가 어린순서부터 정렬하기
+```{r}
+m_plot + 
+  geom_linerange(
+    aes(ymin = q1_age, ymax = q3_age),
+    color = "#76bde0", 
+    size = 5, 
+    alpha = 0.8
+  ) + 
+  geom_point(fill = "#f3d478", colour = "#f3d478", size = 2, shape = 21) +
+  coord_flip()
+
+```
+
+ 

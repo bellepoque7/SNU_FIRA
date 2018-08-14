@@ -1,0 +1,189 @@
+---
+title: 'STAT 1291: Data Science'
+subtitle: 'Lab 6: Data Wrangling'
+output:
+  html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, fig.width=6, fig.height=4, out.width = "70%", fig.align = "center") 
+```
+
+## 1. "Most common women's name
+
+In this part of the lab, we will follow Section 3.3.2 "Most common women's name" in MDSR, which appears, again, on 
+https://fivethirtyeight.com/features/how-to-tell-someones-age-when-all-you-know-is-her-name/.
+
+![](silver-feature-most-common-women-names3.png)
+
+We will continue to use the `make_babynames_dist()` function in the `mdsr` package, which adds some more convenient variables and filters for only the data that is relevant to people alive in 2014.
+
+```{r, message = FALSE, warning = FALSE}
+library(Hmisc)
+library(mdsr)
+library(babynames)
+BabynamesDist <- make_babynames_dist()
+head(BabynamesDist, 2)
+```
+
+Take a moment to analyze this data graphic. What are visual cues? What are the variables? How are the variables being mapped to the visual cues? What `geom()`s are present?
+
+
+#### Exercises
+
+1. What are the three variables (or their values) for "Sarah" in the data graphic? 
+2. Identify the visual cues used to map the three variables. 
+
+To recreate this data graphic, we need to collect the right data. 
+We need to figure out what the 25 most common female names are among those estimated to be alive today. We can do this by 
+
+- filtering for women, 
+- then for each name, 
+- counting the estimated number of people alive today, 
+- sorting by the number estimated to be alive,  
+- taking the top 25 results. 
+
+We also need to know the median age, as well as the first and third quartiles for age among people having each name.
+
+Inspect how these data manipulation steps are implemented into a single pipeline:
+
+```{r, message = FALSE, warning = FALSE}
+com_fem <- BabynamesDist %>%
+  filter(sex == "F") %>%
+  group_by(name) %>%
+  summarise(
+    N = n(), est_num_alive = sum(est_alive_today),
+    q1_age = wtd.quantile(age_today, est_alive_today, probs = 0.25),
+    median_age = wtd.quantile(age_today, est_alive_today, probs = 0.5),
+    q3_age = wtd.quantile(age_today, est_alive_today, probs = 0.75)) %>%
+  arrange(desc(est_num_alive)) %>%
+  head(25)
+```
+
+
+We'll start by binding the data, and defining the x and y aesthetics. Contrary to Figure 3.27 (figure above), we put the names on the x axis and the `median_age` on the y-the reasons for doing so will be made clearer later. We will also define the title of the plot, and remove the x-axis label, since it is self-evident.
+
+```{r}
+w_plot <- ggplot(
+  data = com_fem, 
+  aes(x = reorder(name, -median_age),  y = median_age)
+  ) + 
+  xlab(NULL) + 
+  ylab("Age (in years)") +
+  ggtitle("Median ages for females with the 25 most common names")
+```
+
+The next element to add are the gold rectangles. To do this, we use the `geom_linerange()` function. It may help to think of these not as rectangles, but as really thick lines. Because we have already mapped the names to the x-axis, we only need to specify the mappings for `ymin` and `ymax`. These are mapped to the first and third quartiles, respectively. We will also make these lines very thick and color them appropriately. `geom_linerange()` only understands `ymin` and `ymax`-there is not a corresponding function with `xmin` and `xmax`. This is the reason that we are drawing our plot transposed to Figure 3.27. We have also added a slight `alpha` transparency to allow the gridlines to be visible underneath the gold rectangles.
+
+There is a red dot indicating the median age for each of these names. `geom_point()` is used to map the median age into the plot, then `coord_flip()` function flip our plot around. More context can be added as in the figure above; see textbook. 
+
+```{r}
+w_plot + 
+  geom_linerange(
+    aes(ymin = q1_age, ymax = q3_age),
+    color = "#f3d478", 
+    size = 5, 
+    alpha = 0.8
+    ) + 
+  geom_point(fill = "#ed3324", colour = "white", size = 4, shape = 21) +
+  coord_flip()
+```
+
+Notice that your graphic is different from Nate Silver's (the figure above). You are using more up-to-date data! 
+
+#### Exercises
+
+3. (homework) Re-create the data graphic, "Youngest Male Names" (again, your result will be different from the chart below). You can recycle some of the codes above. In particular, the youngest men names are given by the ascending order or 
+`median_age`. Your chart should be restricted to birth names given to at least 100,000 male Americans since 1900. Use `filter()` to filter names with at least 100,000 `est_num_alive`. Can you make the color of the bars Carolina blue? 
+
+![](silver-feature-youngest-men-names3.png)
+
+
+
+
+## 2. Summarizing groups
+
+In this lab, we will use the original `babynames` dataset, and learn how to use the `group_by()` function in conjunction with the `summarize()` verb that we learned previously. 
+
+```{r, message=FALSE}
+library(dplyr)
+library(babynames)
+head(babynames, 2)
+```
+ 
+We will answer the following question: 
+
+>- In which year was "Jackie" given to M and F babies most equally (i.e. **closest to a 50/50 split**)?
+
+
+
+How would you do this? You could, of course, scan the data visually to estimate the percentages in each year:
+
+```{r}
+babynames %>%
+  filter(name == "Jackie")
+```
+
+But this is very inefficient and does not provide an exact solution. 
+
+The key to solving this problem is to recognize that we need to collapse the **two** rows corresponding to each assigned sex in each year into a single row that contains the information for both sexes (this is the `group_by()` part). Unfortunately, there is no way for R to know what to compute its own -- we have to tell it (this is the `summarise()` part). 
+
+The `group_by` function specifies a variable on which the data frame will be collapsed. Each row in the result set will correspond to one unique value of that variable. In this case, we want to group by `year`. [This is sometimes called "rolling up" a data set.]
+
+```{r}
+babynames %>%
+  filter(name == "Jackie") %>%
+  group_by(year)
+```
+
+This doesn't actually do much, since we haven't told R what to compute. `summarise()` takes a list of definitions for columns you want to see in the result set. The key to understanding `summarise()` is to note that it operates on vectors (which may contain many values), but it **must return a single value**. [Why?] Thus, the variables defined by the arguments to `summarise()` are usually *aggregate* functions like `sum()`, `mean()`, `length()`, `max()`, `n()`, etc.
+
+```{r}
+babynames %>%
+  filter(name == "Jackie") %>%
+  group_by(year) %>%
+  summarise(
+    N = n(), 
+    total = sum(n), 
+    boys = sum(ifelse(sex == "M", n, 0)) 
+  )  
+```
+
+#### Exercises
+
+4. Create a new variable with value  $| 0.5 -  boys / total |$, using `mutate()`. 
+
+5. List the top 10 years in which the name "Jackie" was given to M and F babies most equally. (Hint: arrange the variable created above.)
+
+
+#### Additional exercises
+Use `babynames` data set to answer the following questions. These questions may be challenging. Think carefully about what data transformations are needed to answer each question. In your report, include both code chunks and the result. 
+
+6. Which year had the highest number of births?
+
+7. In a single pipeline, compute the earliest and latest year that each name appears. 
+ 
+8. Among popular names (let's say at least 1% of the births in a given year), which name is the *youngest* -- meaning that its first appearance as a popular name is the most recent? 
+
+9. It seems like there is more diversity of names now than in the past. How have the number of names used changed over time? Has it been the same for boys and girls? 
+
+10. Find the most popular names of the 1990s. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

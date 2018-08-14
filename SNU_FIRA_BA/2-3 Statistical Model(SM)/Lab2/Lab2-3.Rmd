@@ -1,0 +1,147 @@
+---
+title: 'STAT 1291: Data Science'
+subtitle: 'Lab 7: Data Wrangling to explore baseball database'
+output:
+  html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, fig.width=6, fig.height=4, out.width = "70%", fig.align = "center") 
+```
+ 
+
+
+In this lab, we will explore Sean Lahman's historical baseball database, which contains complete seasonal records for all players on all Major League Baseball teams going back to 1871. These data are made available in R via the `Lahman` package. While domain knowledge may be helpful, it is not necessary to follow the example. 
+
+
+```{r, message = FALSE}
+#install.packages("Lahman")
+library(Lahman)
+library(dplyr)
+```
+
+Sean Lahman's Baseball Database is not just one dataset. Type `help("Lahman-package")` to get an idea of the data tables available. The batting statistics of players are stored in one table (`Batting`), while information about people (most of whom are players) is in a different table (`Master`).
+
+Every row in the `Batting` table contains the statistics accumulated by a single player during a single stint for a single team in a single year. Thus, a player like Manny Ramirez has many rows in the Batting table. 
+
+```{r}
+manny <- filter(Batting, playerID == "ramirma02")
+```
+
+#### Exercises 
+
+1. How many rows are in the data frame `manny`? 
+
+Using what we've learned, we can quickly tabulate Ramirez's most common career offensive statistics. For those new to baseball, some additional background may be helpful. A hit (H) occurs when a batter reaches base safely. A home run (HR) occurs when the ball is hit out of the park or the runner advances through all of the bases during that play. Barry Bonds has the record for most home runs (762) hit in a career. A player's batting average (BA) is the ratio of the number of hits to the number of eligible at-bats. The highest career batting average in major league baseball history of 0.366 was achieved by Ty Cobb-season averages above 0.300 are impressive. Finally, runs batted in (RBI) is the number of runners (including the batter in the case of a home run) that score during that batter's at-bat. Hank Aaron has the record for most career RBIs with 2,297.
+
+```{r}
+manny %>% summarize(
+  span = paste(min(yearID), max(yearID), sep = "-"),
+  numYears = n_distinct(yearID), numTeams = n_distinct(teamID),
+  BA = sum(H)/sum(AB), tH = sum(H), tHR = sum(HR), tRBI = sum(RBI)
+  )
+```
+
+Notice how we have used the `paste()` function to combine results from multiple variables into a new variable, and how we have used the `n_distinct()` function to count the number of distinct rows. In his 19-year career, Ramirez hit 555 home runs, which puts him in the top 20 among all Major League players.
+
+
+However, we also see that Ramirez played for five teams during his career. Did he perform equally well for each of them? Breaking his statistics down by team, or by league, is as easy as adding an appropriate `group_by()` command. 
+ 
+
+
+#### Exercises
+2. Display Manny Ramirez's records (as done above), grouped by teams he played for.  
+
+We began this lab by filtering the `Batting` table for the player with `playerID` equal to `ramirma02`. How did we know to use this identifier? This player ID is known as a *key*, and in fact, `playerID` is the *primary key* defined in the `Master` table. That is, every row in the Master table is uniquely identified by the value of `playerID`. Thus there is exactly one row in that table for which `playerID` is equal to `ramirma02`. 
+
+```{r}
+Master %>% 
+  filter(nameLast  == "Ramirez" & nameFirst == "Manny") 
+```
+
+The `playerID` column forms a primary key in the `Master` table, but it does not in the `Batting` table, since as we saw previously, there were 21 rows with that player ID. In the `Batting` table, the `playerID` column is known as a *foreign key*, in that it references a primary key in another table. For our purposes, the presence of this column in both tables allows us to link them together. This way, we can combine data from the `Batting` table with data in the `Master` table. We do this with `inner_join()` by specifying the two tables that we want to join, and the corresponding columns in each table that provide the link. Thus, if we want to display Ramirez's name in our previous result, as well as his age, we must join the `Batting` and `Master` tables together. 
+
+In particular, we use the variable `yearID` in `Batting` table and the variable `birthYear` in `Master` table to compute Ramirez's ages. 
+
+```{r}
+Batting   %>%
+  filter(playerID  == "ramirma02") %>%
+  inner_join(Master, by = c("playerID"  = "playerID"))  %>%
+  group_by(yearID) %>%
+  summarize(
+    Age = max(yearID - birthYear), numTeams = n_distinct(teamID),
+    BA = sum(H)/sum(AB), tH = sum(H), tHR = sum(HR), tRBI = sum(RBI)
+  )   %>%
+arrange(yearID) 
+```
+
+Notice that even though Ramirez's age is a constant for each season, we have to use a vector operation (i.e., `max()`) in order to reduce any potential vector to a single number. (Will `min()` or `mean()` produce the same result?)
+
+Which season was Ramirez's best as a hitter? One relatively simple measurement of batting prowess is *OPS*, or On-Base Plus Slugging Percentage, which is the simple sum of two other statistics: On-Base Percentage (OBP) and Slugging Percentage (SLG). The former basically measures the percentage of time that a batter reaches base safely, whether it comes via a hit (`H`), a base on balls (`BB`), or from being hit by the pitch (`HBP`). The latter measures the average number of bases advanced per at-bat (`AB`), where a single is worth one base, a double (`X2B`) is worth two, a triple (`X3B`) is worth three, and a home run (`HR`) is worth four. (Note that every hit is exactly one of a single, double, triple, or home run.) Let's add this statistic to our results and use it to rank the seasons.
+
+```{r}
+mannyBySeason <- Batting %>%
+  filter(playerID == "ramirma02") %>%
+  inner_join(Master, by = c("playerID"  = "playerID")) %>%
+  group_by(yearID) %>%
+  summarize(
+    Age = max(yearID - birthYear), numTeams = n_distinct(teamID),
+    BA = sum(H)/sum(AB), tH = sum(H), tHR = sum(HR), tRBI = sum(RBI),
+    OBP = sum(H + BB + HBP) / sum(AB + BB + SF + HBP),
+    SLG = sum(H + X2B + 2*X3B + 3*HR) / sum(AB)
+  ) %>%
+  mutate(OPS   = OBP + SLG) %>%
+  arrange(desc(OPS))
+mannyBySeason
+```
+
+We see that Ramirez's OPS was highest in 2000. But 2000 was the height of the steroid era, when many sluggers were putting up tremendous offensive numbers. As data scientists, we know that it would be more instructive to put Ramirez's OPS in context by comparing it to the league average OPS in each season???the resulting ratio is often called OPS+. To do this, we will need to compute those averages. Because there is missing data in some of these columns in some of these years, we need to invoke the `na.rm` argument to ignore that data.
+
+```{r}
+mlb <- Batting %>%
+  filter(yearID %in% 1993:2011) %>%
+  group_by(yearID) %>%
+  summarize(lgOPS =
+    sum(H + BB + HBP, na.rm = TRUE) / sum(AB + BB + SF + HBP, na.rm = TRUE)  +
+    sum(H + X2B + 2*X3B  + 3*HR,  na.rm = TRUE)  / sum(AB,  na.rm = TRUE))
+```
+
+Next, we need to match these league average OPS values to the corresponding entries for Ramirez. We can do this by joining these tables together, and computing the ratio of Ramirez's OPS to that of the league average.
+
+```{r}
+mannyRatio <- mannyBySeason %>%
+  inner_join(mlb, by = c("yearID" = "yearID")) %>%
+  mutate(OPSplus = OPS / lgOPS) %>%
+  select(yearID, Age, OPS, lgOPS, OPSplus) %>%
+  arrange(desc(OPSplus))
+mannyRatio
+```
+In this case, 2000 still ranks as Ramirez's best season relative to his peers, but notice that his 1999 season has fallen from 2nd to 3rd. Since by definition a league batter has an OPS+ of 1, Ramirez posted 17 consecutive seasons with an OPS that was at least 15% better than the average across the major leagues-a truly impressive feat.
+
+Finally, not all joins are the same. An `inner_join()` requires corresponding entries in both tables. Conversely, a `left_join()` returns at least as many rows as there are in the first table, regardless of whether there are matches in the second table. Thus, an `inner_join()` is bidirectional, whereas in a `left_join()`, the order in which you specify the tables matters.
+
+Ramirez appears in the all-star games for 12 years. By using `left_join()`, for seasons when Ramirez did not play for the all-star, `NA`'s will be returned.
+
+```{r} 
+mannyAllstar <- AllstarFull %>% filter(playerID == "ramirma02")
+
+mannyBySeason %>% 
+  left_join(mannyAllstar, by = c("yearID" = "yearID")) %>%
+  select(yearID, Age, OPS, GP, startingPos)  
+```
+ 
+
+#### Exercises
+
+3. In the above code chunk, if `inner_join()` is used in place of `left_join()`, what will be the number of rows of the resulting table? 
+
+4. Confirm that Barry Bonds has the record for most home runs (762) hit in a career. For this, list top 20 players' names with the most home runs, and confirm that Manny is in the top 20. Note that you will need to join the `Batting` and `Master` tables together to display the players' name instead of the player ID. 
+
+5. Name every pitcher in baseball history who has accumulated at least 300 wins (`W`) and at least 3,000 strikeouts (`SO`). Use `Pitching` table. 
+
+6. Display a table with 10 most recent World Series MVP awardees. Include their names and ages. The following code chunk is a good start. 
+
+```{r, eval = FALSE}
+AwardsPlayers %>% filter(awardID == "World Series MVP")
+```
