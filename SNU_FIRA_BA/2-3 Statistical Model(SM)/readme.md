@@ -13,7 +13,7 @@
 
 3. Model Checking and inference: 잔차분석, 회귀분석 
 
-4. Data Visualization and wrangling
+4. Data Visualization and wrangling: ggplot
 
 5. Multivariate linear models
 
