@@ -7,24 +7,29 @@
 
 
 
-1. Optimal Prediction
+## 1. Optimal Prediction
 
-2. The case of simpler linear regression
+## 2. The case of simpler linear regression
 
-3. Model Checking and inference: 잔차분석, 회귀분석 
+## 3. Model Checking and inference: 
 
-4. Data Visualization and wrangling: ggplot & Excercise(by T.A)
+- 잔차분석, 회귀분석 
 
-5. Multivariate linear models
+## 4. Data Visualization and wrangling: 
 
-6. Model Checking and inference
+- ggplot2: adding context, Scales, Statistical transformation
 
-7. Model evaluation and variable selecton
+- Excercise(by T.A)
+## 5. Multivariate linear models
 
-8. Smoothing methods
+## 6. Model Checking and inference
 
-9. Simulations and bootstraps
+## 7. Model evaluation and variable selecton
 
-10. Logistics regression, GLM and GAMs
+## 8. Smoothing methods
 
-11. More general models
+## 9. Simulations and bootstraps
+
+## 10. Logistics regression, GLM and GAMs
+
+## 11. More general models
