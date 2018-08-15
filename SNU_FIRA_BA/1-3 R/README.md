@@ -1,4 +1,6 @@
-﻿# SNU_BDI_-JJJ-R
+# SNU_FIRA_R
+ 
+## 서울대 전종준 교수님의 R강의 실습 파일입니다.
 
 ## 1st Week: Basic
 
