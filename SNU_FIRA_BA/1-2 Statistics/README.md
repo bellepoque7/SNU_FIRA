@@ -1,7 +1,6 @@
 # SNU_BDI_-Lim-Statistics
 
-데이터분석과 추론
-Table of Contents
+서울대 임채용 교수님의 통계학 수업입니다.
 
 1강 강의맛보기
 
@@ -23,4 +22,4 @@ Table of Contents
 
 10강 분산분석
 
-1강 최적화 알고리즘
+11강 최적화 알고리즘
