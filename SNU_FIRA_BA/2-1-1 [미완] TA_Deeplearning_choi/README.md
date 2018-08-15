@@ -1,6 +1,4 @@
 # TA_Deeplearning_choi
-deeplearning
 
-This folder includes TA pratice materials taught by Choi TA
+## 서울대 통계학 최용찬 조교님이 진행해주신 딥러닝 및 실습파일입니다.
 
-1. Deep learning 
