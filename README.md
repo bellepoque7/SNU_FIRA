@@ -8,15 +8,15 @@ Bigdata Analytics(http://bdi.snu.ac.kr/academy/portal/index.php/ba_intro)
 
 --- 
 ## Q1(2018.06-2018.07)
-- 데이터 분석과 추론 (Statistics)(T.A_Yoo)
-- 데이터 기반 통계 분석 시스템 구축 (R)(T.A)
-- 파이썬을 이용한 빅데이터 분석 개론 (Python)(T.A_Sara)
+- 데이터 분석과 추론 (Statistics)(유효준, 양현석 조교)
+- 데이터 기반 통계 분석 시스템 구축 (R)()
+- 파이썬을 이용한 빅데이터 분석 개론 (Python)(김사라 조교)
 
 ---
 ## Q2(2018.08-2018.09)
-- Data-based Statistical Decision Model (SM)(T.A_Kim)
+- Data-based Statistical Decision Model (SM)(김보영 조교)
 - An Introduction to Statistical Learning:R (ISLR)
-- Database Marketing (DM)
+- Database Marketing (DM)(최용찬 조교)
 
 ---
 ## Q3(2018.09-2018.10)
