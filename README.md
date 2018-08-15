@@ -2,6 +2,8 @@
 
 Seoul National 4th industrial revolution academy
 
+2018년 하반기에 서울대학교 빅데이터 연구원에소 교육받은 내용과 Code를 정리한 폴더입니다.
+
 Bigdata Analytics(http://bdi.snu.ac.kr/academy/portal/index.php/ba_intro)
 
 --- 
