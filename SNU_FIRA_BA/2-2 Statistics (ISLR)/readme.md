@@ -21,6 +21,8 @@
 
 - Cross Validation, Leave-one-out CV,Bootstrap
 
-6. 선현모델 선택 및 Regularization
+6. 선형모델 선택 및 Regularization
+
+목적: 설명을 잘하고 에측을 잘하는 모형을 선택하기 위한 방법을 알아본다.
 
 - Ridge Regression, Lasso, __Elastic-Net__
