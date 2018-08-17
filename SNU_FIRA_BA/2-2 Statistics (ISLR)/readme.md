@@ -20,3 +20,7 @@
 5. 재추출 방법들
 
 - Cross Validation, Leave-one-out CV,Bootstrap
+
+6. 선현모델 선택 및 Regularization
+
+- Ridge Regression, Lasso, __Elastic-Net__
