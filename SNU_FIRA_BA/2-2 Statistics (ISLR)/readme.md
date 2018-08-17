@@ -5,23 +5,32 @@
 -------
 
 
-__Chapter 3. Regression
+__Chapter 3. Regression__
+
+
+------
+
 
 - 회귀분석 I (1/2): 단순선형회귀, 중회귀분석
 
 - 회귀분석 I (2/2): 잔차분석 및 모형진단
 
+------
 
-__Chapter 4. Classification: Bayes Classifier
+__Chapter 4. Classification: Bayes Classifier__
 
 - K-NN, Logistic regression, linear discriminant analysis, confusion matrix
 - tree model, random forest, boosting, SVM
+
+------
 
 __Chapter 5. 재추출 방법들
 
 - Cross Validation, Leave-one-out CV,Bootstrap
 
-__Chapter 6. 선형모델 선택 및 Regularization
+------
+
+__Chapter 6. 선형모델 선택 및 Regularization__
 목적: 설명을 잘하고 에측을 잘하는 모형을 선택하기 위한 방법을 알아본다.
 
 - 최상의 서브셋 집합
