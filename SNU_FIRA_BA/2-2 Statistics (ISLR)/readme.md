@@ -24,7 +24,7 @@ __Chapter 4. Classification: Bayes Classifier__
 
 ------
 
-__Chapter 5. 재추출 방법들
+__Chapter 5. 재추출 방법들__
 
 - Cross Validation, Leave-one-out CV,Bootstrap
 
@@ -35,7 +35,7 @@ __Chapter 6. 선형모델 선택 및 Regularization__
 
 - 최상의 서브셋 집합
 
-:2^p 이 모델이 생기는 단점
+:2^p 이 모델이 생기는 단점으로 변수선택법의 등장
 
 - 전진, 후진, 단계적 변수선택법
 
