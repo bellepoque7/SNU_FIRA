@@ -3,7 +3,6 @@
 
 
 -------
--------
 
 
 __Chapter 3. Regression__
@@ -27,7 +26,7 @@ __Chapter 4. Classification: Bayes Classifier__
 
 __Chapter 5. 재추출 방법들__
 
-- Cross Validation, Leave-one-out CV,Bootstrap
+- Cross Validation(CV), Leave-one-out CV(LOOCV),Bootstrap
 
 ------
 
