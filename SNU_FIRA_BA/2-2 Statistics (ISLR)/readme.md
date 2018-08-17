@@ -26,7 +26,7 @@ __Chapter 4. Classification: Bayes Classifier__
 
 __Chapter 5. 재추출 방법들__
 
-- Cross Validation(CV), Leave-one-out CV(LOOCV),Bootstrap
+- Cross Validation(CV), Leave-one-out CV(LOOCV), Bootstrap
 
 ------
 
