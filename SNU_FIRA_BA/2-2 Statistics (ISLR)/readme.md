@@ -48,3 +48,14 @@ __Chapter 6. 선형모델 선택 및 Regularization__
 - Ridge Regression, Lasso
 
 : 예측이 뛰어난 반면 변수 선택이 불가한 Ridge의 보완책으로 Lasso를 사용
+
+__Chatper 7. 비선형함수추정  
+
+명령어 위주로 알아보기.
+
+1. 다항회귀  
+2. 계단함수  
+3. 회귀 스플라인  
+4. 평활 스플라인  
+5. 국소회귀: span의 가장 중요  교호작용 X
+6. 일반화가법모형(GAM)  
