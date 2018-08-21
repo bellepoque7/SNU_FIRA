@@ -45,19 +45,25 @@ __Chapter 6. 선형모델 선택 및 Regularization__
 
 : BIC는 n>7 모델에 더심한 패널티를 
 
-- Ridge Regression, Lasso
+- Ridge, Lasso Regression
 
 : 예측이 뛰어난 반면 변수 선택이 불가한 Ridge의 보완책으로 Lasso를 사용
 
-__Chatper 7. 비선형함수추정  
+------
+
+__Chatper 7. 비선형함수추정__  
+목적: 더 유연하게 적합해보자
 
 명령어 위주로 알아보기.
 
 1. 다항회귀  
 2. 계단함수  
 3. 회귀 스플라인  
-4. 평활 스플라인  
+4. 평활 스플라인: 1:1 대응만 가능    
 5. 국소회귀: span의 가장 중요  교호작용 X
 6. 일반화가법모형(GAM)  
 
-__Chapter 10. 비
+
+------
+
+__Chapter 10. 비지도학습
