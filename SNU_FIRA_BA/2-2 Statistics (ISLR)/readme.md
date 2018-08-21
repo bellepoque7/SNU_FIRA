@@ -17,7 +17,7 @@ __Chapter 3. Regression__
 
 ------
 
-__Chapter 4. Classification: Bayes Classifier__
+__Chapter 4. 분류: Bayes Classifier__
 
 - K-NN, Logistic regression, linear discriminant analysis, confusion matrix
 - tree model, random forest, boosting, SVM
@@ -59,3 +59,5 @@ __Chatper 7. 비선형함수추정
 4. 평활 스플라인  
 5. 국소회귀: span의 가장 중요  교호작용 X
 6. 일반화가법모형(GAM)  
+
+__Chapter 10. 비
