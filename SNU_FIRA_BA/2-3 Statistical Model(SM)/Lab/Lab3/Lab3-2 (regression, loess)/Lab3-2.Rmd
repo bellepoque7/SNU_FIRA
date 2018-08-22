@@ -1,0 +1,102 @@
+---
+title: 'STAT 1291: Data Science'
+subtitle: 'Lab 11: Visualizing regression results'
+output:
+  html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, fig.width=6, fig.height=4, out.width = "70%", fig.align = "center") 
+``` 
+
+In this short lab, we will continue to use `RailTrail` data.
+
+```{r, echo = FALSE, warning=FALSE, message=FALSE}
+library(mosaicData)
+library(tidyverse)
+glimpse(RailTrail)
+RailTrail %>% ggplot(aes(x = hightemp, y = volume)) + 
+  geom_point()  
+```
+
+A simple linear regression is fitted: 
+
+```{r}
+mod1 <- lm(volume ~ hightemp, data = RailTrail)
+summary(mod1)
+```
+
+## Predictions
+
+To visualise the predictions from a model, we start by generating an evenly spaced grid of values that covers the region where our data lies. One way to do that is to use `modelr::data_grid()`. Its first argument is a data frame, and for each subsequent argument it finds the unique variables and then generates all combinations:
+
+```{r}
+library(modelr)
+grid <- RailTrail %>% 
+  data_grid(hightemp) 
+grid 
+```
+
+The package `modelr` provides a few handy functions to work with modeling. For example, `modelr::add_predictions()` adds the predictions from the model to a new column in the data frame:
+
+```{r}
+grid <- grid %>% 
+  add_predictions(mod1) 
+grid
+```
+
+#### Exercise 
+
+1. Use `add_predictions()` to add predictions to your original dataset.
+
+2. The power of `data_grid()` is in generating all combinations of potential data points. Modify the following code to create a data grid for variables `hightemp`, `weekday`, `cloudcover`, and `precip`. Check that the resulting data grid has more data points than the original dataset. 
+
+```{r, eval = FALSE}
+grid2 <- RailTrail %>% 
+  data_grid(hightemp,weekday) 
+grid2
+```
+
+### Visualize predictions
+
+To visualize the predictions, we use both of the original dataset and `grid`. 
+The advantage of this approach is that it will work with any model in R, from the simplest to the most complex.
+```{r}
+ggplot(RailTrail, aes(hightemp)) +
+  geom_point(aes(y = volume)) +
+  geom_line(aes(y = pred), data = grid, colour = "red", size = 1)
+```
+
+### Visualize residuals
+
+The residuals are the errors from the fitted model. The predictions tells you the pattern that the model has captured, and the residuals tell you what the model has missed. The residuals are just the distances between the observed and predicted values that we computed above.
+
+We add residuals to the data with `add_residuals()`, which works much like `add_predictions()`. Note, however, that we use the original dataset, not a manufactured grid. This is because to compute residuals we need actual response values.
+
+```{r}
+library(dplyr)
+RailTrail_r <- RailTrail %>% 
+  add_residuals(mod1) %>% dplyr::select(hightemp, volume, resid)
+head(RailTrail_r)
+```
+
+Visualizing the residuals helps you calibrate the quality of the model: how far away are the predictions from the observed values? Note that the average of the residual will always be 0.
+
+
+```{r}
+ggplot(RailTrail_r, aes(hightemp, resid)) + 
+  geom_ref_line(h = 0) +
+  geom_point() 
+```
+There is a quadratic trend unexplained in the model. 
+
+#### Exercise 
+
+ The following model fits the scatterplot smoother to the data:
+```{r}
+mod2 <- loess(volume ~ hightemp, data = RailTrail)
+```
+3. Use `add_predictions()` and `add_residuals()` to visualize the nonparametric regression curve and the residuals. [Hint: *The advantage of this approach is that it will work with any model in R, from the simplest to the most complex*.]
+ 
+ 

@@ -1,0 +1,244 @@
+---
+title: 'STAT 1291: Data Science'
+subtitle: 'Lab 12: Many models II--Data-driven model selection by cross validation'
+output:
+  html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, warning = FALSE, message = FALSE, fig.width=6, fig.height=4, out.width = "70%", fig.align = "center") 
+```
+ 
+ 
+In this lab, we use the data set `mtcars` to understand a data-driven regression model selection by cross validation. Can you predict `mpg` using other variables?
+
+```{r}
+head(mtcars)
+```
+With the whole data set, we would fit a multiple linear regression model via:
+
+```{r} 
+mod <- lm(mpg ~ ., data = mtcars)
+```
+
+To predict, one may use `broom::augment()`. (`add_predictions()` is another option, but does not work well with cross-validation.)
+
+```{r, warning = FALSE}
+library(broom)
+library(dplyr)
+library(tidyr)
+augment(mod, mtcars) %>% select(.rownames, mpg, .fitted) %>% head()
+```
+
+
+#### Exercises
+
+
+1. Compute the sum of squared errors from the fitted regression model. The formula is 
+$$\mbox{SSE} =  \sum_{i=1}^n (y_i - \hat{y}_i)^2.$$
+
+2. With suitable assumptions on the population, which coefficients are significantly different from zero? [Hint: the answer is either all or nothing.]
+
+This is an evidence of an overfitting. We need to choose a smaller model (with a smaller set of variables involved). This may be achieved by cross-validation. 
+
+## List-columns 
+
+Before we discuss cross-validation, we'll explore the list-column data structure. An example of a list-column data set is shown below. See that the variable "x" has "list" values. 
+
+```{r}
+temp_tbl <- tribble(
+   ~x, ~y,
+  1:3, "1, 2",
+  3:5, "3, 4, 5"
+)
+temp_tbl
+```
+List-columns are implicit in the definition of the data frame: a data frame is a named list of equal length vectors. A list is a vector, so it's always been legitimate to use a list as a column of a data frame. 
+
+* `temp_tbl$y` is a list of length 2, consisting of characters. 
+* `temp_tbl$x` is a list of length 2, consisting of lists. 
+
+A list-column data set consists of *nested* lists. 
+
+Why would you need to use a list-column? Here's one example for  multivalued summaries. One restriction of `dplyr::summarize()` is that it only works with summary functions that return a single value. That means that you can't use it with functions like `quantile()` that return a vector of arbitrary length:
+
+```{r}
+quantile(mtcars$mpg)
+```
+
+The following code does not work, because `summarize()` expects a single value.
+
+```{r, eval = FALSE}
+mtcars %>% 
+  group_by(cyl) %>% 
+  summarize(q = quantile(mpg))
+```
+
+You can however, wrap the result in a list! This obeys the contract of `summarize()`, because each summary is now a list (a vector) of length 1.
+
+```{r}
+mtcars %>% 
+  group_by(cyl) %>% 
+  summarise(q = list(quantile(mpg)))
+```
+
+Use `tidyr::unnest()` to transform a list-column data set to a data frame. `unnest()` works by repeating the regular columns once for each element of the list-column. For example, in the following very simple example we repeat the first row 4 times (because there the first element of y has length four), and the second row once: 
+```{r}
+tibble(x = 1:2, y = list(1:4, 1)) %>% unnest(y)
+```
+
+To make useful results with `unnest()`, you'll also need to capture the probabilities:
+
+```{r}
+probs <- c(0.01, 0.25, 0.5, 0.75, 0.99)
+mtcars %>% 
+  group_by(cyl) %>% 
+  summarize(p = list(probs), q = list(quantile(mpg, probs))) %>% 
+  unnest()
+```
+
+The intermediate results of cross-validation are stored as list-column data structures. 
+
+## What is cross-validation? 
+
+Cross-validation is based on two principles:
+
+1. Never use the same data to fitting and assessment
+2. Use your data as much as possible 
+
+In cross validation, we will set aside a small portion of data for assessment, using the majority of data for fitting. Just because your model performs well on the majority (this is known as in-sample testing), it does not imply that it will perform as well on the set-aside data (out-of-sample testing). The aim is to "train" a model that performs well on the set-aside "testing" data. To use the data as much as possible, we will randomly divide the data into $K$ equal-sized portions, repeat the training-testing for each of $K$ portions. 
+
+![K-fold cross-validation with K = 4](https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/K-fold_cross_validation_EN.jpg/440px-K-fold_cross_validation_EN.jpg)
+ 
+  Implemenation of $K$-fold cross validation amounts to dividing the rows of the data into $K$-portions. We will use packages `broom` and `modelr` in efficiently implementing cross-validation for variable selection in linear regression. 
+
+
+
+## Creating folds
+
+Before worrying about models, we can generate K folds using `crossv_kfold()` from the `modelr` package. Let's practice with the mtcars data to keep things simple.
+ 
+```{r}
+library(modelr)
+set.seed(1) 
+folds <- crossv_kfold(mtcars, k = 5)
+folds
+```
+
+The function `crossv_kfold()` takes a data frame and randomly partitions it's rows (1 to 32 for `mtcars`) into k roughly equal groups. We've partitioned the row numbers into $k = 5$ groups. The results are returned as a tibble like the one above.
+
+Each cell in the test column contains a `resample` object, which is an efficient way of referencing a subset of rows in a data frame. Think of each cell as a reference to the rows of the data frame belonging to each partition. 
+For example, the following tells us that the first partition of the data references rows 5, 9, 17, 20, 27, 28, 29, which accounts for roughly 1 / k of the total data set (7 of the 32 rows).
+```{r}
+folds$test[[1]]
+```
+
+#### Exercise
+
+3. What are the row numbers in the first partition of the "training" data? Notice that the first train object references all rows except 5, 9, 17, 20, 27, 28, 29. 
+
+## Fitting models to training data
+
+We can now run a model on the data referenced by each train object, and validate the model results on each corresponding partition in test. We use `purrr::map()` for this task. 
+
+```{r}
+library(dplyr)
+library(purrr)
+folds <- folds %>% mutate(model = map(train, ~ lm(mpg ~ ., data = .)))
+folds 
+```
+
+Let's see the new commands one by one:
+
+* `folds %>% mutate(model = ...)` is adding a new model column to the `folds` tibble.
+
+* `map(train, ...)` is applying a function (`lm()` in this case) to each of the cells in `train`. (See `?purrr::map`)
+
+* `~ lm(...)` is the regression model applied to each `train` cell.
+
+* `data = .` specifies that the data for the regression model will be the data referenced by each `train` object.
+
+Note that 
+`map(train, ~ lm(mpg ~ ., data = .))` is roughly the same as 
+
+```{r}
+model_tmp <- list()
+attach(folds) # used to call $train directly
+for( i in 1:nrow(folds)) {
+  model_tmp[[i]] <- lm(mpg ~ ., data = train[[i]])
+}
+detach(folds)
+```
+
+`folds %>% mutate(...)` is the same as adding a new variable `model_tmp` (whose values are given by the above `for` loop.) Compare the values of `model_tmp` and `folds$model`. 
+
+The result is a new model column containing fitted regression models based on each of the train data (i.e., the whole data set excluding each partition).
+
+For example, the model fitted to our first set of training data is:
+
+```{r}
+folds$model[[1]] %>% summary()
+```
+
+## Predicting the test data
+
+The next step is to use each model for predicting the outcome variable in the corresponding test data. We have seen that `augment()` can be used to obtain the predicted values. We will use `purrr::map2()` to iterate through each model and set of test data in parallel to compute the predicted values for the test data. 
+
+```{r, warning = FALSE}
+folds %>% mutate(predicted = map2(model, test, ~ augment(.x, newdata = .y)))
+```
+
+To extract the relevant information from these predicted results, we'll `unnest` the data frames in the list `predicted`. `tidy::unnest()` makes each element of the list its own row. 
+```{r, warning=FALSE}
+library(tidyr)
+cv.pred <- folds %>% mutate(predicted = map2(model, test, ~ augment(.x, newdata = .y))) %>% unnest(predicted)
+head(cv.pred)
+```
+
+* `.id` refers to the fold id. In the first fold, the datum corresponding to the value `mpg = 18.7` was a part of testing data; the first value of `.fitted` was from a model trained on the training data. We can now compute the cross-validated sum of squared errors: 
+
+$$\mbox{SSE} =  \sum_{i=1}^n (y_i - \hat{y}_i)^2,$$
+where in this case, $\hat{y}_i$ and $y_i$ are independent. 
+
+```{r}
+cv.pred %>% summarize(SSE =  sum(mpg - .fitted)^2)
+```
+
+#### Exercise
+
+4. Confirm that the SSE from cross validation is much larger than the SSE from Exercise 1. 
+
+## Repeat for many models 
+
+`mtcars` has 10 explanatory variables; there are $2^10 = 1024$ possible models. Experimenting with all models is extremely time-consuming. We will simply choose a few models to compare. For this, we create all model formulas with 3 predictors. 
+
+```{r}  
+# No need to understand what is going on in this R chunk
+vars <- colnames(select(mtcars,-mpg))
+allsubmodels <- combn(vars,3)
+Formulas <- apply(allsubmodels,2, function(x) paste("mpg ~",paste(x,collapse="+")))
+head(Formulas)
+```
+
+Among the `r length(Formulas)` models, which one will provide the smallest cross-validated SSE? See if you understand the following commands.
+
+```{r,  warning = FALSE}
+set.seed(1)
+folds <- crossv_kfold(mtcars, k = 5) # start over
+
+Model_validation <- list()
+
+for(i in seq_along(Formulas)){
+  SSE <- folds %>% 
+    mutate(model = map(train, ~ lm(as.formula(Formulas[i]), data = .))) %>%
+    unnest(predicted = map2(model, test, ~ augment(.x, newdata = .y))) %>%
+    summarize(SSE =  sum(mpg - .fitted)^2)
+  Model_validation[[i]] <- tibble(formula = Formulas[i], SSE = as_vector(SSE))
+}
+
+bind_rows(Model_validation) %>% arrange(SSE) %>% head()
+```
+ 
+
+ 
