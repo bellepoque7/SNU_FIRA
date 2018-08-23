@@ -66,6 +66,22 @@ __Chatper 7. 비선형함수추정__
 
 ------
 
+
+__Chatper 9. SVM__  
+목적: 이진분류(vs 로지스틱)  
+조건: Linear Seperable 하다  
+idea: 차원을 증가시켜 Linear sperable하게 
+개념: Hyperplane, support vector, 
+
+1. maximal margin classfier
+
+2. support vector classfier
+
+3. SVM
+
+----
+
+
 __Chapter 10. 비지도학습__
 
 1. 군집화  
