@@ -21,8 +21,9 @@ help(twinData)
 
 
 #scatter plot
+attach(twinData)
 library(ggplot2)
-twinData %>% ggplot(mapping = aes(ht1, ht2)) + 
+twinData %>% ggplot(mapping = aes(ht1, ht2,colour = cohort)) + 
   geom_point() 
 
 #check correlation
