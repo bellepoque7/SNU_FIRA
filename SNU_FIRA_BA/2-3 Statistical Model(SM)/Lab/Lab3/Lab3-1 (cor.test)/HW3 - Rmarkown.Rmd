@@ -1,0 +1,192 @@
+---
+title: <center><h1>Homework3<br><font size = '5'> 2018년 8월 23일<br>임정 </font></h1> </center>
+output: html_document
+---
+
+
+<center>
+#Setup / EDA
+</center>
+- 분석에 앞서 환경설정을 하고 데이터를 살펴보자.
+```{r setup, message = F, warning = F }
+library(tidyr)
+library(dplyr)
+library(broom)
+library(ggplot2)
+library(OpenMx)
+data(twinData)
+twinData <- as_tibble(twinData)
+head(twinData)
+```
+
+twinData는 쌍둥이의 Cohort연구로써 ht1, wt1는 각각 일찍태어난 쌍둥이의 키, 무게
+ht2, wt2는 각각 늦게 태어난 쌍둥이의 값들이다.
+
+<br>
+<br>
+
+- 데이터구조 살펴보기
+```{r}
+str(twinData)
+```
+
+  위는 데이터 구조를 전개한 모습이다.
+
+corhort: 연구집단으로 Younger  어린집단, Older: 노인집단  
+Zygosity: MZ는 일란성, DZ는 이란성 M, F은 각각 성별이며 DZOZ는 이란성쌍둥이 중  성별이 다른쌍둥이이다.  
+더욱 자세한 변수설명은 help(twinData) 명령어를 통해 확인 할 수 있다.
+
+<br>
+<br>
+
+
+- zygosity 기준별 산점
+```{r overview, warning = F, fig.align='center'}
+twinData %>% ggplot(mapping = aes(ht1, ht2,colour = zygosity)) + 
+  geom_point() 
+```
+
+  위의 그림은 모든데이터에 Zygosity를 Label로 정하여 ht1과 ht2의 산점도 그림이다.
+
+
+<br>
+<br>
+
+<center>
+# Excercise 8
+</center>
+  Q) cohort, zygosity 기준으로 각 하위그룹에 대하여 도시하고,
+키 변수간 유의미한 유사성을 색깔로 표현하고 코멘트를 추가하라.
+```{r Excercise 8, warning = F, message =F, fig.align='center'}
+a<- twinData %>% group_by(cohort,zygosity) %>%
+  do(tidy(cor.test(~ht1+ht2, alternative = 'greater', data =.))) %>%
+  select(cohort,zygosity, conf.low)
+
+twinData %>% 
+  inner_join(a) %>% 
+  group_by(cohort,zygosity) %>% ggplot(mapping = aes(ht1, ht2, colour = conf.low)) +
+  geom_point() + facet_grid(rows =vars(cohort), cols =vars(zygosity)) +
+  geom_abline(a=1, b=0, color ='red', linetype = 'longdash')
+```
+
+  위의 그림은 Zygosity와 Corhort 8개 하위그룹에 대한 ht1/ht2 산점도를 나타낸 것이다.
+빨간선은 y = x 그래프로 두 변수가 같은 값의 위치를 확인하고 있다. 
+두 변수 간의 상관관계높으면 밝은색으로, 낮으면 어두운 색깔을 띄도록 설정하였다. 
+그래프를 볼 때 일란성보다는 이란성일때, 동성쌍둥이보다는 이성쌍둥이가 더 낮은 상관성을 가지는 것 처럼 보인다.
+
+
+<br>
+<br>
+
+<center>
+# Excercise 9
+</center>
+- cohort, zygosity 기준으로 각 하위그룹에 대하여 도시하고,
+몸무게 변수간 유의미한 유사성을 색깔로 표현하고 코멘트를 추가하라.
+```{r Excercise 9, warning = F, message = F, fig.align='center'}
+b<- twinData %>% group_by(cohort,zygosity) %>%
+  do(tidy(cor.test(~wt1+wt2, alternative = 'greater', data =.))) %>%
+  select(cohort,zygosity, conf.low)
+
+twinData %>% 
+  inner_join(b) %>% 
+  group_by(cohort,zygosity) %>% ggplot(mapping = aes(wt1, wt2, colour = conf.low)) +
+  geom_point() + facet_grid(rows =vars(cohort), cols =vars(zygosity)) +
+  geom_abline(a=1, b=0, color ='red',linetype="longdash")
+```
+
+  문제 8번과 동일하게 wt1/wt2에 대해서 산점도를 그려보았다. 
+  키와 동일하게 몸무게에 대해서도 두 쌍둥이에 대한 상관관계의 경향성이 같아 보인다.
+
+<br>
+<br>
+
+
+<center>
+# Excercise 10
+</center>
+- gather()함수를 사용하여 twinData를 하위그룹으로 도식화하라 
+```{r Exercise 10, warning = F, fig.align='center'}
+
+gathered_twinData <- twinData %>% gather(order, height, ht1, ht2)
+gathered_twinData %>% ggplot(mapping = aes(order, height)) + 
+  geom_boxplot() +  facet_grid(cohort ~ zygosity)
+
+```
+
+  위 그림은 Gather함수를 사용하여 Cohort와 Zigosity의 하위그룹으로 나눈 것이다.
+
+
+<br>
+<br>
+
+<center>
+# Excercise 11
+  Q) 위 의 boxplot을 볼때 처음 가설을 조정해야할 필요가 있는지 논의하시요.  
+  A) 전체 산점도를 보았을 때는 ht1, ht2 변수간 상관관계가 높은 것으로 판단되었으나
+  각 하위그룹별로 보았을때 이란성 다른성별(DZOS)의 하위그룹의 집단의 키가 달라보인다. 
+  정확한 추론을 위하여 하기에 각각 유의성 검정을 해볼 필요성이 대두되었다.
+
+- MZFF 그룹
+</center>
+```{r Exercise 11, warning = F}
+twin_MZFF <- twinData %>% filter(zygosity =='MZFF')
+t.test(twin_MZFF$ht1, twin_MZFF$ht2, alternative = 'two.sided', paired=T)  
+
+```
+
+  쌍체검정을 해본 결과 p= 0.42로 두 집단은 귀무가설인 ht1=th2를 채택하게된다.
+
+<br>
+<br>
+
+- DZOS 그룹 
+
+```{r, Excercise 11}
+twin_DZOS <- twinData %>% filter(zygosity =='DZOS')
+t.test(twin_DZOS$ht1, twin_DZOS$ht2, alternative = 'two.sided', paired=T, data = twin_DZOS)
+
+```
+
+  DZOS의 키에 대해서 쌍체검정을 실행해본 결과 p-value가 매우 작아 귀무가설을 기각하고 
+대립가설 채택한다. 결론적으로 이란성 쌍둥이의 키는 유의하게 다르다. 위 결과에 따라 zygosity 변수에 따라 유의수준 5%에서 두 집단의 키가 같고 다름을 판단 할 수 있게 되었다.
+
+<br>
+<br>
+
+<center>
+# Exercise 12
+</center>
+  Q1) 왜  쌍체검정을 사용해야하는가?  
+  A1) 쌍둥이 집단은 서로 독립이 아니다. 쌍둥이라는 특징을 가진 종속변수이기 때문에 의약품 투여, 쌍둥이 연구는 쌍체검정을 시행해야 한다.
+
+<br>
+
+
+
+  Q2) 각 그룹에 대하여 5% 유의검정을 시행하라.
+```{r Exercsise 12-2}
+
+twinData_p <-twinData %>% group_by(zygosity, cohort) %>% 
+  do(tidy(t.test(.$ht1, .$ht2, alternative = 'two.sided', paired=T,data = .)))
+twinData_p
+```
+  실행 결과 DZOS의 2개 cohort그룹에 대해서만 유의한 결과가 나왔다.
+
+
+
+<br>
+
+
+  Q3) t-test시행 결과를 색깔로 보여주는 그래프를 그려라.
+```{r, Excercise 12-3, warning = F, fig.align='center'}
+
+gathered_twinData <- twinData %>% gather(order, height, ht1, ht2)
+gathered_twinData %>% inner_join(twinData_p, by = c('cohort', 'zygosity')) %>%
+  mutate(significance = ifelse(p.value<0.05, 'Yes(<0.05)', 'No')) %>%
+  ggplot(mapping = aes(order, height, fill = significance)) + 
+  geom_boxplot() + facet_grid(cohort ~ zygosity)
+
+```
+
+  위 그래프가 보여주는 내용은 DZOS의 younger, older그룹에서 ht1, ht2변수가 유의하게 다름을 5% 유의수준에서 확인 한것을 도식화 한 것이다.

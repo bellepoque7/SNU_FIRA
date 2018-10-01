@@ -16,20 +16,22 @@ twinData <- as_tibble(twinData)
 
 twinData %>% ggplot(mapping = aes(ht1, ht2,colour = zygosity)) + 
   geom_point() 
-# Zygosity 별로 산점도를 그려보았다.
+# zygosity 별로 산점도를 그려보았다.
 # subgroup별로 다시 그려보자.
 
 
 #어린그룹 산점도
 twin.young <- twinData[which(twinData$cohort  == 'younger'),]
 twin.young %>% ggplot(mapping = aes(ht1, ht2)) + 
-  geom_point() + geom_abline(a=1, b= 0, color = 'red', lwd = 1.0) + geom_smooth(method='lm')
+  geom_point() 
+#+ geom_abline(a=1, b= 0, color = 'red', lwd = 1.0) + geom_smooth(method='lm')
 
 
 #나이든 그룹 산점도
 twin.old <- twinData %>% filter(cohort == 'older')
 twin.old %>% ggplot(mapping = aes(ht1, ht2)) + 
-  geom_point() + geom_abline(a=1, b= 0, color = 'red', lwd = 1.0)+ geom_smooth(method='lm')
+  geom_point()
+#+ geom_abline(a=1, b= 0, color = 'red', lwd = 1.0)+ geom_smooth(method='lm')
 
 #어린그룹과 나이든 그룹이 다른게 보이지 않는다.
 
@@ -40,7 +42,8 @@ twin.old %>% ggplot(mapping = aes(ht1, ht2)) +
 # DZOS만 따로봐보자
 twin.DZOS <- twinData[which(twinData$zygosity  == 'DZOS'),]
 twin.DZOS %>% ggplot(mapping = aes(ht1, ht2)) + 
-  geom_point() + geom_abline(a=1, b= 0, color = 'red', lwd = 1.0) + geom_smooth(method='lm')
+  geom_point()
+#+ geom_abline(a=1, b= 0, color = 'red', lwd = 1.0) + geom_smooth(method='lm')
 
 
 #-----
@@ -94,10 +97,10 @@ gathered_twinData %>% ggplot(mapping = aes(order, height)) +
 # 더 자세히 기술할 것
 
 twin_MZFF <- twinData %>% filter(zygosity =='MZFF')
-t.test(ht1, ht2, alternative = 'two.sided', paired=T, data = twin_MZFF) 
-# boxplot으로 보는 시각적인 자료와 다르게  t.test결과  유의하게 나온다
+t.test(twin_MZFF$ht1, twin_MZFF$ht2, alternative = 'two.sided', paired=T) 
+# 쌍체검정을 해본 결과 두 집단은 귀무가설인 ht1=th2를 채택하게된다.
 
 twin_DZOS <- twinData %>% filter(zygosity =='DZOS')
-t.test(ht1, ht2, alternative = 'two.sided', paired=T, data = twin_DZOS) # do(tidy)를 이용하여  한번에 할것 
-# 결론 boxplot의 시각적 비교와는 달리 쌍체검정을 한 결과 두 집단에 대해서 유의한 결과가 나타났다.
-#따라서 subgroup에 따라 두 집단의 키가 다르다고 할 수 있다. 
+t.test(twin_DZOS$ht1, twin_DZOS$ht2, alternative = 'two.sided', paired=T, data = twin_DZOS) # do(tidy)를 이용하여  한번에 할것 
+# DZOS의 키에 대해서 쌍체검정을 실해본 결과 p-value가 매우 작아 귀무가설을 기각하고 
+# 대립가설 채택한다. 결론적으로 이란성 쌍둥이의 키는 유의하게 다르다.
